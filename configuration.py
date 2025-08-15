@@ -22,13 +22,16 @@
 
 import os
 from models import CreativeProviderType, LLMParameters
+from dotenv import load_dotenv, find_dotenv
 
 FFMPEG_BUFFER = "reduced/buffer.mp4"
 FFMPEG_BUFFER_REDUCED = "reduced/buffer_reduced.mp4"
 
+# Load environment variables
+load_dotenv(find_dotenv())
+
 if not os.path.exists("reduced"):
   os.makedirs("reduced")
-
 
 class Configuration:
   """Class that stores all parameters used by ABCD."""
@@ -41,9 +44,9 @@ class Configuration:
     Hence no global variables for hard coded values by design.
     """
     # set parameters
-    self.project_id: str = ""
-    self.project_zone: str = "us-central1"
-    self.bucket_name: str = ""
+    self.project_id: str = os.environ.get("PROJECT")
+    self.project_zone: str = os.environ.get("REGION")
+    self.bucket_name: str = os.environ.get("BUCKET")
     self.knowledge_graph_api_key: str = ""
     self.bq_dataset_name: str = "abcd_detector_ds"
     self.bq_table_name: str = "abcd_assessments"
