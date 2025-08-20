@@ -22,16 +22,13 @@
 
 import os
 from models import CreativeProviderType, LLMParameters
-from dotenv import load_dotenv, find_dotenv
 
 FFMPEG_BUFFER = "reduced/buffer.mp4"
 FFMPEG_BUFFER_REDUCED = "reduced/buffer_reduced.mp4"
 
-# Load environment variables
-load_dotenv(find_dotenv())
-
 if not os.path.exists("reduced"):
   os.makedirs("reduced")
+
 
 class Configuration:
   """Class that stores all parameters used by ABCD."""
@@ -44,9 +41,9 @@ class Configuration:
     Hence no global variables for hard coded values by design.
     """
     # set parameters
-    self.project_id: str = os.environ.get("PROJECT")
-    self.project_zone: str = os.environ.get("REGION")
-    self.bucket_name: str = os.environ.get("BUCKET")
+    self.project_id: str = ""
+    self.project_zone: str = "us-central1"
+    self.bucket_name: str = ""
     self.knowledge_graph_api_key: str = ""
     self.bq_dataset_name: str = "abcd_detector_ds"
     self.bq_table_name: str = "abcd_assessments"
@@ -58,8 +55,8 @@ class Configuration:
     self.use_llms = True
     self.run_long_form_abcd: bool = True
     self.run_shorts: bool = True
-    self.features_to_evaluate: list[str] # list of feature ids to run
-    self.creative_provider_type = CreativeProviderType.YOUTUBE
+    self.features_to_evaluate: list[str]  # list of feature ids to run
+    self.creative_provider_type = CreativeProviderType.GCS  # GCS by default
 
     # set videos
     self.video_uris: list[str] = []
@@ -117,7 +114,7 @@ class Configuration:
       verbose: Turn on extra debug and execution prints.
     """
     self.project_id = project_id
-    self.project_zone = project_zone or "us-central1"
+    self.project_zone = project_zone or "europe-west4"
     self.bucket_name = bucket_name
     self.knowledge_graph_api_key = knowledge_graph_api_key.strip()
     self.bq_dataset_name = bigquery_dataset

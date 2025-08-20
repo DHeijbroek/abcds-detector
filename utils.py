@@ -20,9 +20,69 @@
 
 """Utils Module for generic functions"""
 
+import os
 import argparse
 import textwrap
 from configuration import Configuration
+from dotenv import load_dotenv, find_dotenv
+from models import CreativeProviderType
+
+# Load environment variables
+load_dotenv(find_dotenv())
+
+
+def build_custom_config(
+    video_uris,
+    brand_name,
+    brand_variations,
+    branded_products,
+    branded_products_categories,
+    branded_call_to_actions    
+) -> Configuration:
+  """Builds ABCD configuration with all the required parameters.
+
+  Args:
+      args: The parser arguments.
+  Returns:
+      config: The parameter configuration for ABCD.
+
+  """
+  config = Configuration()
+  config.set_parameters(
+      project_id=os.getenv("PROJECT"),
+      project_zone=os.getenv("REGION"),
+      bucket_name=os.getenv("BUCKET"),
+      knowledge_graph_api_key="", # ignore
+      bigquery_dataset="", # ignore
+      bigquery_table="", # ignore
+      assessment_file="", # ignore
+      extract_brand_metadata=False,
+      use_annotations=False,
+      use_llms=True,
+      run_long_form_abcd=True,
+      run_shorts=True,
+      features_to_evaluate=[], #NEW: args.features_to_evaluate.split(","),
+      creative_provider_type=CreativeProviderType.GCS,
+      verbose=True,
+  )
+  config.set_videos(video_uris)
+  config.set_brand_details(
+      brand_name=brand_name,
+      brand_variations=brand_variations,
+      products=branded_products,
+      products_categories=branded_products_categories,
+      call_to_actions=branded_call_to_actions,
+  )
+
+  config.set_llm_params(
+      llm_name="gemini-2.5-flash-lite",
+      location="europe-west4",
+      max_output_tokens=65535,
+      temperature=1,
+      top_p=0.95,
+  )
+
+  return config
 
 
 def build_abcd_params_config(args: any) -> Configuration:

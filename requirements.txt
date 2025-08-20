@@ -6,3 +6,5 @@ google-api-python-client==2.172.0
 pandas==2.3.0
 pyarrow==20.0.0
 python-dotenv==1.1.1
+fastapi==0.116.1
+fastapi-cloud-cli==0.1.5

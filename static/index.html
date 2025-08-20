@@ -1,0 +1,220 @@
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>ABCD Detector</title>
+
+    <style>
+      :root{
+        /* Tweak these if you want closer matching */
+        --af-red:       #e0112b;  /* vivid brand-y red */
+        --af-red-light: #ff3b5c;  /* warmer pink-ish highlight */
+        --af-ink:       #0b0b0e;  /* near-black used on site */
+        --af-paper:     #fbfbfb;  /* clean white */
+      }
+      body {
+        margin: 0;
+        padding: 0;
+        background: var(--af-paper);
+        color: var(--af-ink);
+        font: 16px/1.4 system-ui, -apple-system, Segoe UI, Roboto, Inter, Arial, sans-serif;
+      }
+      .container {
+        margin: auto;
+        max-width: 640px;
+        padding-top: 48px;
+        text-align: center;
+      }
+      input {
+        min-width: 320px;
+        padding: 6px 12px;
+        font-size: 12px;
+        margin-top: 6px;
+        margin-bottom: 12px;
+      }
+      label {
+        font-size: 14px;
+      }
+
+      .af-btn {
+        --shadow: 0 10px 20px rgba(224,17,43,.25), 0 2px 6px rgba(0,0,0,.12);
+        --shadow-hover: 0 14px 28px rgba(224,17,43,.32), 0 4px 12px rgba(0,0,0,.16);
+
+        display: inline-grid;
+        place-items: center;
+        gap: .5rem;
+        padding: 4px 64px;
+        margin-top: 8px;
+
+        border-radius: 999px;
+        border: none;
+
+        /* Reset default button styles */
+        appearance: none;
+        -webkit-appearance: none;
+        -moz-appearance: none;
+        background: none;
+
+        color: #fff;
+        cursor: pointer;
+        font-weight: 500;
+        font-size: 14px;
+        letter-spacing: .2px;
+        text-decoration: none;
+
+        background: linear-gradient(135deg, var(--af-red) 0%, var(--af-red-light) 55%, #ff7488 100%);
+        box-shadow: var(--shadow);
+
+        transform: translateZ(0);
+        transition: transform .18s ease, box-shadow .18s ease, filter .18s ease;
+      }
+
+      .af-btn:hover{
+        transform: translateY(-2px);
+        box-shadow: var(--shadow-hover);
+        filter: saturate(1.05);
+      }
+      
+      .af-btn:active{
+        transform: translateY(0);
+        filter: brightness(.96);
+      }
+  
+      .af-btn:focus-visible{
+        outline: 3px solid color-mix(in srgb, var(--af-red), white 35%);
+        outline-offset: 3px;
+      }
+  
+      .af-btn[disabled],
+      .af-btn[aria-disabled="true"]{
+        opacity:.65;
+        cursor:not-allowed;
+        box-shadow:none;
+      }
+      .af-btn[disabled]:hover,
+      .af-btn[disabled]:active {
+        transform: none;
+        filter: none;
+      }
+  
+      /* Optional: on dark sections switch text to white and show a subtle border */
+      .on-dark .af-btn{
+        border:1px solid rgba(255,255,255,.18);
+      }
+  
+      /* Respect reduced motion */
+      @media (prefers-reduced-motion: reduce){
+        .af-btn{
+          transition:none;
+        }
+      }
+    </style>
+</head>
+<body>
+    <div class="container">
+      <h1>ABCD Detector</h1>
+      <p style="margin-bottom: 32px;">
+        Please insert the following data to analyse the YouTube video:
+      </p>
+  
+      <form id="abcd-form">
+        <div>
+          <label>URL</label><br>
+          <input type="text" placeholder="https://www.youtube.com/watch?v=x65VVs-aSUI" id="video_url">
+        </div>
+  
+        <div>
+          <label>Brand</label><br>
+          <input type="text" placeholder="Google" id="brand">
+        </div>
+  
+        <div>
+          <label>Brand Variations</label><br>
+          <input type="text" placeholder="google, gle" id="brand_variations">
+        </div>
+  
+        <div>
+          <label>Products</label><br>
+          <input type="text" placeholder="Google pixel, Google pixel buds, Google pixel watch" id="products">
+        </div>
+  
+        <div>
+          <label>Categories</label><br>
+          <input type="text" placeholder="phone, watch, buds" id="categories">
+        </div>
+  
+        <div>
+          <label>Call to action</label><br>
+          <input type="text" placeholder="buy it" id="cta">
+        </div>
+  
+        <button class="af-btn" id="submit-btn">Submit</button>
+      </form>
+
+      <!-- Result -->
+      <div id="result-box" style="
+        display: none;
+        margin-top: 24px;
+        padding: 16px;
+        border-radius: 8px;
+        background: #f4f4f4;
+        color: #222;
+        font-family: monospace;
+        white-space: pre-wrap;
+        text-align: left;
+      "></div>
+    </div>
+  
+    <!-- ✅ Script after all inputs -->
+    <script>
+      async function processFormData() {
+
+        // Disable button
+        document.getElementById("submit-btn").disabled = true;
+
+        const payload = {
+          video_url:        document.getElementById("video_url").value.trim(),
+          brand:            document.getElementById("brand").value.trim(),
+          brand_variations: document.getElementById("brand_variations").value.trim(),
+          products:         document.getElementById("products").value.trim(),
+          categories:       document.getElementById("categories").value.trim(),
+          cta:              document.getElementById("cta").value.trim()
+        };
+
+        console.log("Serving payload:", payload);
+  
+        try {
+          const response = await fetch("/analyse", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(payload)
+          });
+    
+          if (!response.ok) {
+            throw new Error("Network response was not ok " + response.statusText);
+          }
+    
+          const result = await response.json();
+          console.log("Server response:", result);
+
+          // Show result in the box
+          const resultBox = document.getElementById("result-box");
+          resultBox.style.display = "block";
+          resultBox.textContent = result.logs;
+        } catch (error) {
+          console.error("Error:", error);
+          const resultBox = document.getElementById("result-box");
+          resultBox.style.display = "block";
+          resultBox.textContent = "❌ Error: " + error.message;
+        }
+
+        // Enable button
+        document.getElementById("submit-btn").disabled = false;
+      }
+  
+      document.getElementById("submit-btn")
+        .addEventListener("click", processFormData);
+    </script>
+</body>
+</html>
